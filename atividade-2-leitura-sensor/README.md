@@ -56,8 +56,8 @@ I (xxx) app: Acel[g] x=  0.00 y=  0.00 z=  1.00 | Giro[dps] x=   0.00 y=   0.00 
 
 ## Entrega — screenshots
 
-Salvar em `docs/`:
-- [ ] Configuração do ESP-IDF e da conta Wokwi
-- [ ] Circuito montado no Wokwi
-- [ ] Build compilando sem erros
-- [ ] Monitor serial mostrando as leituras
+Todos os prints estão em [Daniel Quiteque_prints.pdf](Daniel%20Quiteque_prints.pdf):
+- [x] Configuração do ESP-IDF (`idf.py --version` → ESP-IDF v5.5.5) e da conta Wokwi (Community License)
+- [x] Circuito montado no Wokwi
+- [x] Build compilando sem erros (`Project build complete`)
+- [x] Monitor serial mostrando as leituras, com valores alterados no painel do MPU6050
