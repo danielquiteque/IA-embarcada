@@ -117,3 +117,59 @@ intervalo de treino, onde a rede tem menos amostras ao redor do ponto.
 Início da execução, com o log de boot do ESP32-S3 e o uso medido da arena (1260 de 2000 bytes):
 
 ![Uso da tensor arena no Wokwi](docs/wokwi-tensor-arena.png)
+
+## 7. Extra — nova aplicação: classificação de orientação com MPU6050
+
+Código completo em [atividade-4-extra-orientacao](../atividade-4-extra-orientacao/).
+
+O Hello World foi transformado em uma aplicação com **sensor novo, dataset novo e modelo retreinado**:
+
+| | Hello World | Extra |
+|---|---|---|
+| Sensor | nenhum (x calculado no código) | **MPU6050** (acelerômetro + giroscópio) via I2C |
+| Dataset | 1000 pontos de `sin(x)` | **8500 leituras rotuladas** de acelerômetro e giroscópio |
+| Tarefa | regressão (1 → 1) | **classificação** (6 entradas → 7 classes) |
+| Modelo | Dense 32 → 32 → 1 | Dense 16 → 16 → 7 + softmax, treinado do zero |
+| Operadores | FullyConnected | FullyConnected + Softmax |
+
+**Classes:** plana (face para cima/baixo), em pé (eixo X para cima/baixo), de lado (eixo Y para
+cima/baixo) e **em rotação**. A última exige que a rede combine os dois sensores: girando, a
+orientação deixa de importar.
+
+**Dataset.** Sem placa física para coletar dados, o dataset foi gerado a partir da física do sensor.
+Parado, o acelerômetro mede só a gravidade (~1 g apontando para cima no referencial da placa), e por
+isso foram sorteadas direções uniformes na esfera, com magnitude de 0,7 a 1,5 g, ruído de 0,03 g e
+tremor de até 30 °/s. Em rotação, foram usados de 60 a 250 °/s em um eixo aleatório. Os valores são
+saturados em ±2 g e ±250 °/s, como no driver. O rótulo estático é o eixo com a maior componente da
+gravidade. O CSV gerado faz parte do repositório.
+
+**Resultados (20% de teste):**
+
+| Modelo | Tamanho | Acurácia |
+|---|---|---|
+| float32 | 4204 B | 97,29% |
+| int8 (embarcado) | 4072 B | 96,71% |
+
+Os erros se concentram perto de 45°, onde a placa está entre duas orientações.
+
+**Pipeline no ESP32-S3:** leitura I2C (driver da atividade 2/6) → normalização (giroscópio ÷ 250,
+igual ao treino) → quantização int8 **com `lroundf` e saturação**, corrigindo a observação 5 →
+`Invoke()` cronometrado com `esp_timer_get_time()` → `argmax` e desquantização da confiança.
+
+**Execução no Wokwi.** Com a mesma aceleração (X = 1 g), a classe muda apenas pelo giroscópio:
+
+| Aceleração [g] | Rotação [°/s] | Classe prevista | Confiança | Tempo de inferência |
+|---|---|---|---|---|
+| 1, 0, 0 | 0, 0, 121 | em rotação | 100% | 1715 µs |
+| 1, 0, 0 | 0, 0, 1 | em pé, eixo X para cima | 100% | 1879 µs |
+
+![Extra: placa girando](../atividade-4-extra-orientacao/docs/wokwi-em-rotacao.png)
+
+![Extra: placa parada em pé](../atividade-4-extra-orientacao/docs/wokwi-em-pe-x.png)
+
+Os ~1,8 ms por inferência usam os kernels de referência, já que o ESP-NN foi desativado para o
+Wokwi; em hardware real, com o ESP-NN, o tempo tende a cair.
+
+**Limitações:** o dataset é sintético. Com uma placa real, o próximo passo seria coletar leituras pelo
+serial (como na atividade 2/6) e fazer *fine-tuning*. Além disso, uma única leitura não separa
+"girando devagar" de "parado com tremor", o que uma janela de leituras resolveria (como no UCI HAR).
