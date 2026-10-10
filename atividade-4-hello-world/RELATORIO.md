@@ -83,11 +83,12 @@ acessos desalinhados ao ler os campos do flatbuffer.
 5. **Quantização da entrada sem arredondamento nem saturação.** `int8_t x_q = x / scale + zp` trunca
    em vez de arredondar e não limita a [-128, 127]. Funciona aqui porque x nunca sai de [0, 2π], mas
    para dados reais de sensor seria melhor usar `roundf` e saturar o valor.
-6. **Tamanho da arena.** Os 2000 bytes são fixados manualmente. Por isso adicionei a impressão de
-   `arena_used_bytes()` no início da execução: na prática, ajusta-se a arena ao valor usado mais uma
-   margem, sem desperdiçar RAM.
+6. **Tamanho da arena.** Os 2000 bytes são fixados manualmente. Com a impressão de
+   `arena_used_bytes()` que adicionei, a execução no Wokwi mostrou **1260 de 2000 bytes usados (63%)**,
+   sobrando 740 bytes. Na prática, a arena poderia ser reduzida para ~1300–1400 bytes (valor usado
+   mais uma margem), economizando RAM sem risco de falha no `AllocateTensors()`.
 7. **Este modelo é maior que o original** (32 neurônios por camada no notebook contra 16 no exemplo),
-   mas ainda cabe com sobra: ~5 KB de flash e RAM dentro da arena de 2000 bytes.
+   mas ainda cabe com sobra: ~5 KB de flash e 1260 bytes de RAM na arena.
 
 ## 6. Execução no Wokwi
 
@@ -112,3 +113,7 @@ O MAE desses pontos no dispositivo é **0.0167**, coerente com o MAE de 0.0191 d
 no PC. Isso confirma que a quantização da entrada, a inferência e a desquantização da saída no
 firmware reproduzem o comportamento do modelo convertido. O maior erro ocorre em x = 0, na borda do
 intervalo de treino, onde a rede tem menos amostras ao redor do ponto.
+
+Início da execução, com o log de boot do ESP32-S3 e o uso medido da arena (1260 de 2000 bytes):
+
+![Uso da tensor arena no Wokwi](docs/wokwi-tensor-arena.png)
