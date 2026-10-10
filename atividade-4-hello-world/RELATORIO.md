@@ -1,6 +1,8 @@
 # Relatório — Hello World com TensorFlow Lite Micro no ESP32-S3 (Wokwi)
 
-**Disciplina:** IA Embarcada e Modelos Compactos — Atividade Avaliativa Prática 4/6
+**Aluno:** Daniel Quiteque  
+**Disciplina:** IA Embarcada e Modelos Compactos — Atividade Avaliativa Prática 4/6  
+**Repositório:** https://github.com/danielquiteque/IA-embarcada/tree/main/atividade-4-hello-world
 
 ## 1. Objetivo
 
@@ -81,11 +83,32 @@ acessos desalinhados ao ler os campos do flatbuffer.
 5. **Quantização da entrada sem arredondamento nem saturação.** `int8_t x_q = x / scale + zp` trunca
    em vez de arredondar e não limita a [-128, 127]. Funciona aqui porque x nunca sai de [0, 2π], mas
    para dados reais de sensor seria melhor usar `roundf` e saturar o valor.
-6. **Tamanho da arena.** Os 2000 bytes são fixados manualmente. O valor medido com
-   `arena_used_bytes()` mostra a folga, e na prática ajusta-se a arena a esse valor mais uma margem.
+6. **Tamanho da arena.** Os 2000 bytes são fixados manualmente. Por isso adicionei a impressão de
+   `arena_used_bytes()` no início da execução: na prática, ajusta-se a arena ao valor usado mais uma
+   margem, sem desperdiçar RAM.
 7. **Este modelo é maior que o original** (32 neurônios por camada no notebook contra 16 no exemplo),
    mas ainda cabe com sobra: ~5 KB de flash e RAM dentro da arena de 2000 bytes.
 
-## 6. Evidência
+## 6. Execução no Wokwi
 
-Print do Wokwi rodando: `docs/wokwi-hello-world.png`
+![Hello World rodando no Wokwi](docs/wokwi-hello-world.png)
+
+Primeiro meio ciclo impresso pelo ESP32-S3 comparado com o seno exato:
+
+| x | y (ESP32, int8) | sin(x) | erro |
+|---|---|---|---|
+| 0.0000 | 0.0473 | 0.0000 | 0.0473 |
+| 0.3142 | 0.3154 | 0.3090 | 0.0064 |
+| 0.6283 | 0.5992 | 0.5878 | 0.0114 |
+| 0.9425 | 0.8358 | 0.8090 | 0.0268 |
+| 1.2566 | 0.9619 | 0.9511 | 0.0108 |
+| 1.5708 | 0.9935 | 1.0000 | 0.0065 |
+| 1.8850 | 0.9619 | 0.9511 | 0.0108 |
+| 2.1991 | 0.7963 | 0.8090 | 0.0127 |
+| 2.5133 | 0.5756 | 0.5878 | 0.0122 |
+| 2.8274 | 0.3312 | 0.3090 | 0.0222 |
+
+O MAE desses pontos no dispositivo é **0.0167**, coerente com o MAE de 0.0191 do modelo int8 medido
+no PC. Isso confirma que a quantização da entrada, a inferência e a desquantização da saída no
+firmware reproduzem o comportamento do modelo convertido. O maior erro ocorre em x = 0, na borda do
+intervalo de treino, onde a rede tem menos amostras ao redor do ponto.

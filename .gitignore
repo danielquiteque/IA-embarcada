@@ -1,6 +1,7 @@
 # Material da disciplina (não versionado: direitos do professor)
 *.pdf
 !atividade-*/*_prints.pdf
+!atividade-*/*_relatorio_*.pdf
 *.zip
 *.ipynb
 

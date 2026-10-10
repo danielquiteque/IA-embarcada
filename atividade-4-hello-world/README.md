@@ -54,5 +54,7 @@ opções de compilação do componente — assim o componente baixado não preci
 
 ## Entrega
 
-- [ ] Print do Wokwi rodando o Hello World (salvar em `docs/`)
-- [ ] Relatório: [RELATORIO.md](RELATORIO.md)
+- [x] Print do Wokwi rodando o Hello World: [docs/wokwi-hello-world.png](docs/wokwi-hello-world.png)
+- [x] Relatório: [RELATORIO.md](RELATORIO.md) (versão em PDF: [Daniel Quiteque_relatorio_atividade4.pdf](Daniel%20Quiteque_relatorio_atividade4.pdf))
+
+![Hello World rodando no Wokwi](docs/wokwi-hello-world.png)
