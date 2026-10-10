@@ -6,6 +6,7 @@ Hardware alvo: **ESP32-S3**, simulado no **Wokwi** e compilado com **ESP-IDF v5.
 | Atividade | Pasta | Conteúdo |
 |---|---|---|
 | 2/6 — Leitura de sensor | [atividade-2-leitura-sensor](atividade-2-leitura-sensor/) | Driver I2C em C para o MPU6050 (acelerômetro, giroscópio e temperatura) com leituras no monitor serial |
+| 4/6 — Hello World TFLite Micro | [atividade-4-hello-world](atividade-4-hello-world/) | Treino e quantização int8 de um modelo que aproxima `sin(x)`, inferência com TFLite Micro e [relatório](atividade-4-hello-world/RELATORIO.md) |
 
 ## Como compilar e simular
 
